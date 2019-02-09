@@ -524,7 +524,6 @@ def akkaModule(name: String): Project =
   Project(id = name, base = file(name))
     .settings(akka.AkkaBuild.buildSettings)
     .settings(akka.AkkaBuild.defaultSettings)
-    .settings(akka.Formatting.formatSettings)
     .enablePlugins(BootstrapGenjavadoc)
 
 /* Command aliases one can run locally against a module
