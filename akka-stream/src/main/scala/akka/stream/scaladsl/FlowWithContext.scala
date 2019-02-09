@@ -48,7 +48,7 @@ final class FlowWithContext[-In, -CtxIn, +Out, +CtxOut, +Mat](
   override def via[Out2, Ctx2, Mat2](viaFlow: Graph[FlowShape[(Out, CtxOut), (Out2, Ctx2)], Mat2]): Repr[Out2, Ctx2] =
     FlowWithContext.from(delegate.via(viaFlow))
 
-  override def viaMat[Out2, Ctx2, Mat2, Mat3](flow: Graph[FlowShape[(Out, CtxOut), (Out2, Ctx2)], Mat2])(combine: (Mat, Mat2) ⇒ Mat3): FlowWithContext[In, CtxIn, Out2, Ctx2, Mat3] =
+  override def viaMat[Out2, Ctx2, Mat2, Mat3](flow: Graph[FlowShape[(Out, CtxOut), (Out2, Ctx2)], Mat2])(combine: (Mat, Mat2) => Mat3): FlowWithContext[In, CtxIn, Out2, Ctx2, Mat3] =
     FlowWithContext.from(delegate.viaMat(flow)(combine))
 
   def asFlow: Flow[(In, CtxIn), (Out, CtxOut), Mat] = delegate

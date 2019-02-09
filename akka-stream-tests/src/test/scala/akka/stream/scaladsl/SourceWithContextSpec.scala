@@ -33,7 +33,7 @@ class SourceWithContextSpec extends StreamSpec {
       Source(Vector(msg))
         .asSourceWithContext(_.offset)
         .map(_.data)
-        .asSource.map { case (e, _) ⇒ e }
+        .asSource.map { case (e, _) => e }
         .runWith(TestSink.probe[String])
         .request(1)
         .expectNext("a")
@@ -63,7 +63,7 @@ class SourceWithContextSpec extends StreamSpec {
       Source(Vector(Message("a", 1L)))
         .asSourceWithContext(_.offset)
         .map(_.data)
-        .via(flowWithContext.map(s ⇒ s + "b"))
+        .via(flowWithContext.map(s => s + "b"))
         .asSource
         .runWith(TestSink.probe[(String, Long)])
         .request(1)
@@ -75,8 +75,8 @@ class SourceWithContextSpec extends StreamSpec {
       Source(Vector(Message("a", 1L)))
         .asSourceWithContext(_.offset)
         .map(_.data)
-        .mapConcat { str ⇒
-          List(1, 2, 3).map(i ⇒ s"$str-$i")
+        .mapConcat { str =>
+          List(1, 2, 3).map(i => s"$str-$i")
         }
         .asSource
         .runWith(TestSink.probe[(String, Long)])
@@ -89,8 +89,8 @@ class SourceWithContextSpec extends StreamSpec {
       Source(Vector(Message("a", 1L)))
         .asSourceWithContext(_.offset)
         .map(_.data)
-        .mapConcat { str ⇒
-          List(1, 2, 3, 4).map(i ⇒ s"$str-$i")
+        .mapConcat { str =>
+          List(1, 2, 3, 4).map(i => s"$str-$i")
         }
         .grouped(2)
         .asSource
@@ -101,11 +101,11 @@ class SourceWithContextSpec extends StreamSpec {
     }
 
     "pass through context via statefulMapConcat" in {
-      val statefulFunction: () ⇒ String ⇒ collection.immutable.Iterable[String] = () ⇒ {
+      val statefulFunction: () => String => collection.immutable.Iterable[String] = () => {
         var counter = 0
-        str ⇒ {
+        str => {
           counter = counter + 1
-          (1 to counter).map(_ ⇒ str)
+          (1 to counter).map(_ => str)
         }
       }
       Source(Vector(Message("a", 1L), Message("z", 2L)))

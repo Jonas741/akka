@@ -34,7 +34,7 @@ class FlowWithContextLogSpec extends StreamSpec("""
       "log each element" in {
         val logging = FlowWithContext[Message, Long].log("my-log")
         Source(List(Message("a", 1L), Message("b", 2L)))
-          .asSourceWithContext(m ⇒ m.offset)
+          .asSourceWithContext(m => m.offset)
           .via(logging)
           .asSource
           .runWith(Sink.ignore)
@@ -45,9 +45,9 @@ class FlowWithContextLogSpec extends StreamSpec("""
       }
 
       "allow extracting value to be logged" in {
-        val logging = FlowWithContext[Message, Long].log("my-log2", m ⇒ m.data)
+        val logging = FlowWithContext[Message, Long].log("my-log2", m => m.data)
         Source(List(Message("a", 1L)))
-          .asSourceWithContext(m ⇒ m.offset)
+          .asSourceWithContext(m => m.offset)
           .via(logging)
           .asSource
           .runWith(Sink.ignore)
@@ -64,7 +64,7 @@ class FlowWithContextLogSpec extends StreamSpec("""
 
         val logging = FlowWithContext[Message, Long].log("my-log3")
         Source(List(Message("a", 1L), Message("b", 2L)))
-          .asSourceWithContext(m ⇒ m.offset)
+          .asSourceWithContext(m => m.offset)
           .via(logging)
           .asSource
           .withAttributes(disableElementLogging)
@@ -79,7 +79,7 @@ class FlowWithContextLogSpec extends StreamSpec("""
 
       "log each element" in {
         Source(List(Message("a", 1L), Message("b", 2L)))
-          .asSourceWithContext(m ⇒ m.offset)
+          .asSourceWithContext(m => m.offset)
           .log("my-log4")
           .asSource
           .runWith(Sink.ignore)
@@ -91,8 +91,8 @@ class FlowWithContextLogSpec extends StreamSpec("""
 
       "allow extracting value to be logged" in {
         Source(List(Message("a", 1L)))
-          .asSourceWithContext(m ⇒ m.offset)
-          .log("my-log5", m ⇒ m.data)
+          .asSourceWithContext(m => m.offset)
+          .log("my-log5", m => m.data)
           .asSource
           .runWith(Sink.ignore)
 

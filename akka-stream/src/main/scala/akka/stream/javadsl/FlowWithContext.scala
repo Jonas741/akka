@@ -27,7 +27,7 @@ object FlowWithContext {
   }
 
   def fromPairs[In, CtxIn, Out, CtxOut, Mat](under: Flow[Pair[In, CtxIn], Pair[Out, CtxOut], Mat]): FlowWithContext[In, CtxIn, Out, CtxOut, Mat] = {
-    new FlowWithContext(scaladsl.FlowWithContext.from(scaladsl.Flow[(In, CtxIn)].map { case (i, c) ⇒ Pair(i, c) }.viaMat(under.asScala.map(_.toScala))(scaladsl.Keep.right)))
+    new FlowWithContext(scaladsl.FlowWithContext.from(scaladsl.Flow[(In, CtxIn)].map { case (i, c) => Pair(i, c) }.viaMat(under.asScala.map(_.toScala))(scaladsl.Keep.right)))
   }
 }
 
@@ -64,7 +64,7 @@ final class FlowWithContext[-In, -CtxIn, +Out, +CtxOut, +Mat](delegate: scaladsl
     scaladsl.Flow[Pair[In, CtxIn]]
       .map(_.toScala)
       .viaMat(delegate.asFlow)(scaladsl.Keep.right)
-      .map { case (o, c) ⇒ Pair(o, c) }
+      .map { case (o, c) => Pair(o, c) }
       .asJava
 
   // remaining operations in alphabetic order
@@ -118,7 +118,7 @@ final class FlowWithContext[-In, -CtxIn, +Out, +CtxOut, +Mat](delegate: scaladsl
     viaScala(_.map(f.apply))
 
   def mapAsync[Out2](parallelism: Int, f: function.Function[Out, CompletionStage[Out2]]): FlowWithContext[In, CtxIn, Out2, CtxOut, Mat] =
-    viaScala(_.mapAsync[Out2](parallelism)(o ⇒ f.apply(o).toScala))
+    viaScala(_.mapAsync[Out2](parallelism)(o => f.apply(o).toScala))
 
   /**
    * Context-preserving variant of [[akka.stream.javadsl.Flow.mapConcat]].
@@ -149,7 +149,7 @@ final class FlowWithContext[-In, -CtxIn, +Out, +CtxOut, +Mat](delegate: scaladsl
    * @see [[akka.stream.javadsl.Flow.mapConcat]]
    */
   def mapConcat[Out2](f: function.Function[Out, _ <: java.lang.Iterable[Out2]]): FlowWithContext[In, CtxIn, Out2, CtxOut, Mat] =
-    viaScala(_.mapConcat(elem ⇒ Util.immutableSeq(f.apply(elem))))
+    viaScala(_.mapConcat(elem => Util.immutableSeq(f.apply(elem))))
 
   /**
    * Apply the given function to each context element (leaving the data elements unchanged).
@@ -197,9 +197,9 @@ final class FlowWithContext[-In, -CtxIn, +Out, +CtxOut, +Mat](delegate: scaladsl
    * @see [[akka.stream.javadsl.Flow.statefulMapConcat]]
    */
   def statefulMapConcat[Out2](f: function.Creator[function.Function[Out, java.lang.Iterable[Out2]]]): FlowWithContext[In, CtxIn, Out2, CtxOut, Mat] =
-    viaScala(_.statefulMapConcat { () ⇒
+    viaScala(_.statefulMapConcat { () =>
       val fun = f.create()
-      elem ⇒ Util.immutableSeq(fun(elem))
+      elem => Util.immutableSeq(fun(elem))
     })
 
   /**
@@ -208,7 +208,7 @@ final class FlowWithContext[-In, -CtxIn, +Out, +CtxOut, +Mat](delegate: scaladsl
    * @see [[akka.stream.javadsl.Flow.log]]
    */
   def log(name: String, extract: function.Function[Out, Any], log: LoggingAdapter): FlowWithContext[In, CtxIn, Out, CtxOut, Mat] =
-    viaScala(_.log(name, e ⇒ extract.apply(e))(log))
+    viaScala(_.log(name, e => extract.apply(e))(log))
 
   /**
    * Context-preserving variant of [[akka.stream.javadsl.Flow.log]].
@@ -236,6 +236,6 @@ final class FlowWithContext[-In, -CtxIn, +Out, +CtxOut, +Mat](delegate: scaladsl
 
   def asScala: scaladsl.FlowWithContext[In, CtxIn, Out, CtxOut, Mat] = delegate
 
-  private[this] def viaScala[In2, CtxIn2, Out2, CtxOut2, Mat2](f: scaladsl.FlowWithContext[In, CtxIn, Out, CtxOut, Mat] ⇒ scaladsl.FlowWithContext[In2, CtxIn2, Out2, CtxOut2, Mat2]): FlowWithContext[In2, CtxIn2, Out2, CtxOut2, Mat2] =
+  private[this] def viaScala[In2, CtxIn2, Out2, CtxOut2, Mat2](f: scaladsl.FlowWithContext[In, CtxIn, Out, CtxOut, Mat] => scaladsl.FlowWithContext[In2, CtxIn2, Out2, CtxOut2, Mat2]): FlowWithContext[In2, CtxIn2, Out2, CtxOut2, Mat2] =
     new FlowWithContext(f(delegate))
 }
