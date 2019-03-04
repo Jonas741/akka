@@ -5,7 +5,7 @@
 package akka.stream.javadsl
 
 import akka.annotation.ApiMayChange
-import akka.japi.{ Pair, Util, function }
+import akka.japi.{ function, Pair, Util }
 import akka.stream._
 import akka.event.LoggingAdapter
 import akka.util.ConstantFun
@@ -27,7 +27,9 @@ import scala.compat.java8.FutureConverters._
  * API MAY CHANGE
  */
 @ApiMayChange
-final class SourceWithContext[+Out, +Ctx, +Mat](delegate: scaladsl.SourceWithContext[Out, Ctx, Mat]) extends GraphDelegate(delegate) {
+final class SourceWithContext[+Out, +Ctx, +Mat](delegate: scaladsl.SourceWithContext[Out, Ctx, Mat])
+    extends GraphDelegate(delegate) {
+
   /**
    * Transform this flow by the regular flow. The given flow must support manual context propagation by
    * taking and producing tuples of (data, context).
@@ -37,7 +39,9 @@ final class SourceWithContext[+Out, +Ctx, +Mat](delegate: scaladsl.SourceWithCon
    *
    * @see [[akka.stream.javadsl.Flow.via]]
    */
-  def via[Out2, Ctx2, Mat2](viaFlow: Graph[FlowShape[Pair[Out @uncheckedVariance, Ctx @uncheckedVariance], Pair[Out2, Ctx2]], Mat2]): SourceWithContext[Out2, Ctx2, Mat] =
+  def via[Out2, Ctx2, Mat2](
+      viaFlow: Graph[FlowShape[Pair[Out @uncheckedVariance, Ctx @uncheckedVariance], Pair[Out2, Ctx2]], Mat2])
+    : SourceWithContext[Out2, Ctx2, Mat] =
     viaScala(_.via(akka.stream.scaladsl.Flow[(Out, Ctx)].map { case (o, c) => Pair(o, c) }.via(viaFlow).map(_.toScala)))
 
   /**
@@ -86,7 +90,8 @@ final class SourceWithContext[+Out, +Ctx, +Mat](delegate: scaladsl.SourceWithCon
    *
    * @see [[akka.stream.javadsl.Source.grouped]]
    */
-  def grouped(n: Int): SourceWithContext[java.util.List[Out @uncheckedVariance], java.util.List[Ctx @uncheckedVariance], Mat] =
+  def grouped(
+      n: Int): SourceWithContext[java.util.List[Out @uncheckedVariance], java.util.List[Ctx @uncheckedVariance], Mat] =
     viaScala(_.grouped(n).map(_.asJava).mapContext(_.asJava))
 
   /**
@@ -97,7 +102,8 @@ final class SourceWithContext[+Out, +Ctx, +Mat](delegate: scaladsl.SourceWithCon
   def map[Out2](f: function.Function[Out, Out2]): SourceWithContext[Out2, Ctx, Mat] =
     viaScala(_.map(f.apply))
 
-  def mapAsync[Out2](parallelism: Int, f: function.Function[Out, CompletionStage[Out2]]): SourceWithContext[Out2, Ctx, Mat] =
+  def mapAsync[Out2](parallelism: Int,
+                     f: function.Function[Out, CompletionStage[Out2]]): SourceWithContext[Out2, Ctx, Mat] =
     viaScala(_.mapAsync[Out2](parallelism)(o => f.apply(o).toScala))
 
   /**
@@ -144,7 +150,8 @@ final class SourceWithContext[+Out, +Ctx, +Mat](delegate: scaladsl.SourceWithCon
    *
    * @see [[akka.stream.javadsl.Source.sliding]]
    */
-  def sliding(n: Int, step: Int = 1): SourceWithContext[java.util.List[Out @uncheckedVariance], java.util.List[Ctx @uncheckedVariance], Mat] =
+  def sliding(n: Int, step: Int = 1)
+    : SourceWithContext[java.util.List[Out @uncheckedVariance], java.util.List[Ctx @uncheckedVariance], Mat] =
     viaScala(_.sliding(n, step).map(_.asJava).mapContext(_.asJava))
 
   /**
@@ -175,7 +182,8 @@ final class SourceWithContext[+Out, +Ctx, +Mat](delegate: scaladsl.SourceWithCon
    *
    * @see [[akka.stream.javadsl.Source.statefulMapConcat]]
    */
-  def statefulMapConcat[Out2](f: function.Creator[function.Function[Out, java.lang.Iterable[Out2]]]): SourceWithContext[Out2, Ctx, Mat] =
+  def statefulMapConcat[Out2](
+      f: function.Creator[function.Function[Out, java.lang.Iterable[Out2]]]): SourceWithContext[Out2, Ctx, Mat] =
     viaScala(_.statefulMapConcat { () =>
       val fun = f.create()
       elem => Util.immutableSeq(fun(elem))
@@ -215,6 +223,8 @@ final class SourceWithContext[+Out, +Ctx, +Mat](delegate: scaladsl.SourceWithCon
 
   def asScala: scaladsl.SourceWithContext[Out, Ctx, Mat] = delegate
 
-  private[this] def viaScala[Out2, Ctx2, Mat2](f: scaladsl.SourceWithContext[Out, Ctx, Mat] => scaladsl.SourceWithContext[Out2, Ctx2, Mat2]): SourceWithContext[Out2, Ctx2, Mat2] =
+  private[this] def viaScala[Out2, Ctx2, Mat2](
+      f: scaladsl.SourceWithContext[Out, Ctx, Mat] => scaladsl.SourceWithContext[Out2, Ctx2, Mat2])
+    : SourceWithContext[Out2, Ctx2, Mat2] =
     new SourceWithContext(f(delegate))
 }
