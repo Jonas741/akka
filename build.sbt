@@ -530,30 +530,36 @@ def akkaModule(name: String): Project =
   - where three or more tasks should be checked for faster turnaround
   - to avoid another push and CI cycle should mima or paradox fail.
   - the assumption is the user has already run tests, hence the test:compile. */
-def commandValue(p: Project, externalTest: Option[Project] = None) = {
+def commandValue(p: Project, externalTest: Option[Project] = None, multiJvmTests: Boolean = false) = {
   val test = externalTest.getOrElse(p)
   val optionalMima = if (p.id.endsWith("-typed")) "" else s";${p.id}/mimaReportBinaryIssues"
-  s";${test.id}/test:compile$optionalMima;${docs.id}/paradox"
+  val format = s"${p.id}/scalafmt;${p.id}/test:scalafmt" + 
+    externalTest.map(t => s";${t.id}/test:scalafmt").getOrElse("") +
+    (if (multiJvmTests) s";${test.id}/multi-jvm:scalafmt" else "") 
+  
+  s";$format;${test.id}/test:compile$optionalMima;${docs.id}/paradox"
 }
 addCommandAlias("allActor", commandValue(actor, Some(actorTests)))
-addCommandAlias("allRemote", commandValue(remote, Some(remoteTests)))
-addCommandAlias("allClusterCore", commandValue(cluster))
-addCommandAlias("allClusterMetrics", commandValue(clusterMetrics))
-addCommandAlias("allDistributedData", commandValue(distributedData))
-addCommandAlias("allClusterSharding", commandValue(clusterSharding))
-addCommandAlias("allClusterTools", commandValue(clusterTools))
+addCommandAlias("allRemote", commandValue(remote, Some(remoteTests), multiJvmTests = true))
+addCommandAlias("allClusterCore", commandValue(cluster, multiJvmTests = true))
+addCommandAlias("allClusterMetrics", commandValue(clusterMetrics, multiJvmTests = true))
+addCommandAlias("allDistributedData", commandValue(distributedData, multiJvmTests = true))
+addCommandAlias("allClusterSharding", commandValue(clusterSharding, multiJvmTests = true))
+addCommandAlias("allClusterTools", commandValue(clusterTools, multiJvmTests = true))
 addCommandAlias("allCluster", Seq(
-  commandValue(cluster),
-  commandValue(distributedData),
-  commandValue(clusterSharding),
-  commandValue(clusterTools)).mkString)
+  commandValue(cluster, multiJvmTests = true),
+  commandValue(distributedData, multiJvmTests = true),
+  commandValue(clusterSharding, multiJvmTests = true),
+  commandValue(clusterTools, multiJvmTests = true)).mkString)
 addCommandAlias("allPersistence", commandValue(persistence))
 addCommandAlias("allStream", commandValue(stream, Some(streamTests)))
 addCommandAlias("allDiscovery", commandValue(discovery))
 addCommandAlias("allTyped", Seq(
   commandValue(actorTyped, Some(actorTypedTests)),
   commandValue(actorTestkitTyped),
-  commandValue(clusterTyped),
-  commandValue(clusterShardingTyped),
+  commandValue(clusterTyped, multiJvmTests = true),
+  commandValue(clusterShardingTyped, multiJvmTests = true),
   commandValue(persistenceTyped),
   commandValue(streamTyped)).mkString)
+
+addCommandAlias("format", ";scalafmt;test:scalafmt;multi-jvm:scalafmt")
